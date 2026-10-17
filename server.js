@@ -1,4 +1,4 @@
-// Lanifex — dari ide jadi PRD, fitur, task, dan prompt agent (re-implementasi dari observasi perilaku ngodingpakeai.com)
+// Lanifex - dari ide jadi PRD, fitur, task, dan prompt agent (re-implementasi dari observasi perilaku ngodingpakeai.com)
 // Single-file backend: node:http + node:sqlite, zero dependency. Node >= 22.5.
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -151,7 +151,7 @@ const mockQuestions = () => JSON.stringify([
   { id: 'scale', question: 'Berapa banyak user yang diharapkan di bulan pertama?', type: 'single_choice', options: ['< 100', '100–1.000', '1.000–10.000', '10.000+'] },
   { id: 'monetization', question: 'Bagaimana rencana monetisasi aplikasi ini?', type: 'single_choice', options: ['Gratis', 'Freemium', 'Berbayar', 'Belum kepikiran'] },
 ]);
-const mockPrd = (idea) => `# PRD — ${(idea || 'Aplikasi').slice(0, 60)}
+const mockPrd = (idea) => `# PRD - ${(idea || 'Aplikasi').slice(0, 60)}
 
 ## Ringkasan
 Produk ini dibangun dari ide: "${(idea || '').slice(0, 120)}". Dokumen ini menjadi sumber konteks untuk agent coding.
@@ -175,8 +175,8 @@ ${'{TECH}'}
 - Setiap fitur punya bukti uji manual.
 
 ## Roadmap
-1. Fase 1 — fondasi & halaman pertama (frontend, data tiruan).
-2. Fase 2 — backend & integrasi data nyata.
+1. Fase 1 - fondasi & halaman pertama (frontend, data tiruan).
+2. Fase 2 - backend & integrasi data nyata.
 `;
 const mockFeatures = () => JSON.stringify({
   features: [
@@ -203,7 +203,7 @@ const SYS_QUESTIONS = `QUESTION_GEN. Kamu analis produk. Diberikan ide aplikasi,
 Balas HANYA JSON array (tanpa markdown) berisi objek: {"id":"slug","question":"...","type":"text|single_choice|multi_choice","options":["..."] (hanya untuk choice)}.
 Bahasa pertanyaan mengikuti bahasa permintaan user.`;
 const SYS_PRD = `PRD_GEN. Kamu product manager senior. Susun PRD markdown (Bahasa Indonesia) dari ide, jawaban pertanyaan, dan preferensi tech stack.
-Struktur wajib: # PRD — <judul>; ## Ringkasan; ## Target User; ## Fitur Utama (per fitur: deskripsi + Kriteria/acceptance criteria tegas); ## Tech Stack; ## Kriteria Sukses; ## Roadmap (fase 1..n).
+Struktur wajib: # PRD - <judul>; ## Ringkasan; ## Target User; ## Fitur Utama (per fitur: deskripsi + Kriteria/acceptance criteria tegas); ## Tech Stack; ## Kriteria Sukses; ## Roadmap (fase 1..n).
 Ringkas, tajam, tanpa basa-basi. Output HANYA markdown PRD.`;
 const SYS_FEATURES = `FEATURE_GEN. Kamu engineering lead. Dari PRD, pecah menjadi fitur, sub-fitur (task), urutkan layak-kerja.
 Balas HANYA JSON: {"features":[{"title":"...","summary":"...","layer":"frontend|backend","tasks":[{"title":"...","layer":"frontend|backend"}]}]}
@@ -231,7 +231,7 @@ async function api(req, res, p, url) {
   if (p === '/api/auth/register' && method === 'POST') {
     const { email, password } = await readBody(req);
     if (!email || !password || password.length < 6) return error(res, 400, 'Email & password (min 6) wajib');
-    if (q.get(`SELECT COUNT(*) n FROM users`).n > 0) return error(res, 403, 'Registrasi ditutup — minta pemilik membuatkan akunmu');
+    if (q.get(`SELECT COUNT(*) n FROM users`).n > 0) return error(res, 403, 'Registrasi ditutup - minta pemilik membuatkan akunmu');
     if (q.get(`SELECT id FROM users WHERE email=?`, email)) return error(res, 409, 'Email sudah terdaftar');
     const r = q.run(`INSERT INTO users(email,pw,role) VALUES(?,?,'owner')`, email, scrypt(password));
     setSession(res, Number(r.lastInsertRowid));
@@ -517,21 +517,21 @@ Server      : ${base}
 Plan ID     : ${plan.id}
 Judul       : ${plan.title}
 
-Langkah 1 — setup (sekali):
+Langkah 1 - setup (sekali):
   lanifex login --server ${base} --token ${token}
   lanifex init                # pasang skill Lanifex untuk agent ini
 
-Langkah 2 — baca PRD sekali:
+Langkah 2 - baca PRD sekali:
   lanifex plan get ${plan.id}
 
-Langkah 3 — LOOP satu task per satu, BERHENTI tiap ganti layer (frontend→backend) atau fase:
+Langkah 3 - LOOP satu task per satu, BERHENTI tiap ganti layer (frontend→backend) atau fase:
   lanifex task next --plan ${plan.id} --json
       # kerjakan SATU task ini sampai selesai; JANGAN borong task lain
   lanifex task start <ref>
   lanifex task complete <ref>
       # lalu minta task berikutnya
-  # kalau done:true — SEMUA task selesai, BERHENTI dan lapor ke user.
-  # kalau layer/fase BEDA dari task sebelumnya — BERHENTI, lapor progres, tunggu user bilang "lanjut".
+  # kalau done:true - SEMUA task selesai, BERHENTI dan lapor ke user.
+  # kalau layer/fase BEDA dari task sebelumnya - BERHENTI, lapor progres, tunggu user bilang "lanjut".
   # kalau ke-block: lanifex task fail <ref> "alasan"
 
 Aturan: kerjakan hanya dari title + PRD + kode yang ada. Commit tiap task selesai.`;

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Lanifex CLI — sisi agent: login, baca PRD, loop task satu-per-satu. Zero dependency.
+// Lanifex CLI - sisi agent: login, baca PRD, loop task satu-per-satu. Zero dependency.
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -40,7 +40,7 @@ function needAuth() {
 const [group, sub, arg] = cmd;
 
 if (!group || group === 'help' || group === '--help') {
-  console.log(`Lanifex CLI — task loop untuk agent coding.
+  console.log(`Lanifex CLI - task loop untuk agent coding.
 
   login --server <url> --token <lf_...>   Simpan kredensial (mode 0600)
   logout                                    Hapus kredensial tersimpan
@@ -64,7 +64,7 @@ if (group === 'login') {
 }
 if (group === 'logout') { try { fs.unlinkSync(CFG); } catch {} console.log('✓ Kredensial dihapus'); process.exit(0); }
 if (group === 'init') {
-  console.log(`# Lanifex — aturan agent (tempel ke AGENTS.md / CLAUDE.md / .cursorrules)
+  console.log(`# Lanifex - aturan agent (tempel ke AGENTS.md / CLAUDE.md / .cursorrules)
 
 ## Loop kerja
 1. Baca PRD SEKALI: \`lanifex plan get <planId>\`
@@ -85,9 +85,9 @@ if (group === 'init') {
 if (group === 'status') {
   const { server, token } = needAuth();
   const s = await api(server, token, '/api/agent/status').catch(e => fail(e.message));
-  console.log(`✓ Server OK — plan #${s.planId}`);
+  console.log(`✓ Server OK - plan #${s.planId}`);
   const d = await api(server, token, `/api/agent/plan/${s.planId}`).catch(() => null);
-  if (d) console.log(`  Progres: ${d.progress.done}/${d.progress.total} task (${d.progress.percent}%) — ${d.progress.features} fitur`);
+  if (d) console.log(`  Progres: ${d.progress.done}/${d.progress.total} task (${d.progress.percent}%) - ${d.progress.features} fitur`);
   process.exit(0);
 }
 if (group === 'plan' && sub === 'get') {
@@ -118,4 +118,4 @@ if (group === 'task' && ['start', 'complete', 'fail', 'reset'].includes(sub)) {
   console.log(`✓ ${arg} → ${map[sub]} (${d.done}/${d.total} selesai, ${d.percent}%)`);
   process.exit(0);
 }
-fail(`Perintah tidak dikenal: ${cmd.join(' ')} — coba: lanifex help`);
+fail(`Perintah tidak dikenal: ${cmd.join(' ')} - coba: lanifex help`);

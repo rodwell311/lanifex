@@ -9,7 +9,7 @@ DATA_DIR="$(mktemp -d)"
 BASE="http://127.0.0.1:$PORT"
 JAR="$(mktemp)"
 export PORT DATA_DIR
-# NB: jangan sentuh ./data milik container Docker — smoke test pakai DATA_DIR sendiri.
+# NB: jangan sentuh ./data milik container Docker - smoke test pakai DATA_DIR sendiri.
 
 MOCK_LLM=1 node server.js &
 SRV=$!
@@ -62,4 +62,4 @@ echo "$PROG" | grep -q '"done":1' || { echo "FAIL: progress"; exit 1; }
 say "checkpoint metadata (layer/phase dari server)"
 node cli.js task next --plan "$PID" --json
 
-say "PASS — smoke test OK"
+say "PASS - smoke test OK"

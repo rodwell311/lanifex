@@ -12,7 +12,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     # Opsional: join network container LLM gateway (kalau gateway bind 127.0.0.1 host).
-    # Aktifkan dengan: LLM_NET=9router_default docker compose up -d — atau hapus blok ini.
+    # Aktifkan dengan: LLM_NET=9router_default docker compose up -d - atau hapus blok ini.
     networks:
       - default
       - router

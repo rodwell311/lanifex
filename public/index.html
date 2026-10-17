@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lanifex — dari ide jadi PRD & task untuk agent</title>
+<title>Lanifex - dari ide jadi PRD & task untuk agent</title>
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
@@ -360,7 +360,7 @@ function saveWizardServer() {
     api(`/api/plan/${state.planId}/wizard-state`, { method: 'PUT', body: { state: { step: state.step || 3, idea: state.idea, tech: state.tech, questions: state.questions, answers: state.answers } } }).catch(() => {});
   }, 700);
 }
-// flush sinkron saat tab ditutup/ditinggal — supaya posisi terakhir tak hilang
+// flush sinkron saat tab ditutup/ditinggal - supaya posisi terakhir tak hilang
 window.addEventListener('pagehide', () => {
   if (!state.planId) return;
   try {
@@ -375,7 +375,7 @@ function stepQuestions() {
   tabs('new'); state.step = 3;
   const Q = state.questions;
   h(`${stepsRail(3)}
-    <h2>Beberapa pertanyaan</h2><p class="lead">Biar PRD-nya lebih akurat. Jawab atau lewati — progres tersimpan otomatis${state.planId ? ` (plan #${state.planId})` : ''}.</p>
+    <h2>Beberapa pertanyaan</h2><p class="lead">Biar PRD-nya lebih akurat. Jawab atau lewati - progres tersimpan otomatis${state.planId ? ` (plan #${state.planId})` : ''}.</p>
     <div class="panel">
       ${Q.map((x, i) => questionHtml(x, i)).join('')}
       <div class="row spread" style="margin-top:16px">
@@ -429,7 +429,7 @@ async function stepPrd() {
     const r = await fetch(`/api/plan/${state.planId}/generate`, { method: 'POST', credentials: 'same-origin' });
     const rd = r.body.getReader(); const dec = new TextDecoder(); let full = '';
     for (;;) { const { done, value } = await rd.read(); if (done) break; full += dec.decode(value, { stream: true }); out.textContent = full; out.scrollTop = out.scrollHeight; }
-    $('#genState').textContent = 'PRD selesai — review dulu, lalu pecah jadi task.';
+    $('#genState').textContent = 'PRD selesai - review dulu, lalu pecah jadi task.';
     $('#toFeat').disabled = false;
   } catch (e) { $('#genState').textContent = 'Gagal: ' + e.message; }
   $('#back').onclick = () => stepQuestions();
@@ -494,7 +494,7 @@ async function openPlan(id) {
     try {
       const { prompt } = await api(`/api/plan/${id}/agent-token`, { method: 'POST' });
       c.innerHTML = `<div class="panel"><div class="row spread"><h3 style="margin:0">Prompt agent</h3><button class="g sm" id="cp">Salin</button></div>
-        <p class="hint">Memuat token akses <span class="mono">ngpk_…</span> — tempel hanya ke agent yang kamu percaya.</p>
+        <p class="hint">Memuat token akses <span class="mono">ngpk_…</span> - tempel hanya ke agent yang kamu percaya.</p>
         <pre class="prompt">${esc(prompt)}</pre></div>`;
       $('#cp').onclick = async () => { await navigator.clipboard.writeText(prompt); toast('Prompt tersalin'); };
     } catch (e) { c.innerHTML = `<div class="panel"><p class="err">${esc(e.message)}</p></div>`; }
@@ -608,7 +608,7 @@ async function renderSettings() {
     try { await api('/api/settings', { method: 'PUT', body: collect() }); toast('Setelan disimpan'); renderSettings(); }
     catch (e) { $('#sMsg').textContent = e.message; b.disabled = false; }
   };
-  $('#sKeysClear').onclick = async () => { try { await api('/api/settings', { method: 'PUT', body: { apiKey: '' } }); toast('Override kunci dihapus — kembali ke env'); renderSettings(); } catch (e) { toast(e.message); } };
+  $('#sKeysClear').onclick = async () => { try { await api('/api/settings', { method: 'PUT', body: { apiKey: '' } }); toast('Override kunci dihapus - kembali ke env'); renderSettings(); } catch (e) { toast(e.message); } };
   $('#sFetch').onclick = async () => {
     const b = $('#sFetch'); b.disabled = true; b.textContent = 'Mengambil…';
     try {
