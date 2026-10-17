@@ -1,0 +1,35 @@
+services:
+  lanifex:
+    build: .
+    container_name: lanifex
+    ports:
+      - ${PORT:-8788}:8788
+    env_file:
+      - .env
+    environment:
+      # host.docker.internal → akses LLM gateway di host (9Router/Ollama/...)
+      - LLM_BASE_URL=${LLM_BASE_URL:-http://host.docker.internal:20128/v1}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    # Opsional: join network container LLM gateway (kalau gateway bind 127.0.0.1 host).
+    # Aktifkan dengan: LLM_NET=9router_default docker compose up -d — atau hapus blok ini.
+    networks:
+      - default
+      - router
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:8788/api/me').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+networks:
+  router:
+    external: true
+    name: ${LLM_NET:-9router_default}

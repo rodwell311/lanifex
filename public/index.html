@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lanifex — dari ide jadi PRD & task untuk agent</title>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+:root{
+  --bg:#0c0c0d; --panel:#131313; --panel2:#181818; --line:#232323; --line2:#303030;
+  --ink:#e8e6e1; --dim:#a3a19a; --dim2:#8b8880;
+  --amber:#e8a33d; --amber-soft:rgba(232,163,61,.13);
+  --ok:#63bf8e; --bad:#d9705f; --warn:#e0b64d;
+  --r:6px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 'Space Grotesk',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--amber)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.dim{color:var(--dim)} .dim2{color:var(--dim2)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px 120px}
+
+/* top bar */
+header.top{border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(12,12,13,.92);backdrop-filter:blur(8px);z-index:20}
+header.top .in{max-width:1080px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:26px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:-.02em;white-space:nowrap}
+.brand svg{display:block}
+.brand em{font-style:normal;color:var(--amber)}
+nav.tabs{display:flex;gap:2px;margin-left:6px}
+nav.tabs button{background:none;border:0;color:var(--dim);font:500 13.5px 'Space Grotesk',sans-serif;padding:7px 11px;cursor:pointer;border-bottom:2px solid transparent;border-radius:0}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button.on{color:var(--amber);border-bottom-color:var(--amber)}
+.top .spacer{flex:1}
+.who{font-size:12.5px;color:var(--dim2)}
+.who b{color:var(--dim);font-weight:500}
+
+h1{font-size:21px;font-weight:700;letter-spacing:-.015em;margin:26px 0 2px}
+h2{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0 0 3px}
+h3{font-size:13px;font-weight:600;letter-spacing:.02em;margin:0 0 8px;text-transform:uppercase;color:var(--dim)}
+p.lead{color:var(--dim);font-size:13.5px;margin:0 0 18px}
+label{display:block;font-size:12.5px;color:var(--dim);margin:14px 0 5px}
+input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line2);color:var(--ink);border-radius:4px;padding:9px 11px;font:14px 'Space Grotesk',sans-serif}
+input:focus,textarea:focus{outline:0;border-color:var(--amber)}
+textarea{min-height:96px;resize:vertical}
+button.b{background:var(--amber);border:0;color:#161210;border-radius:4px;padding:9px 15px;font:600 13.5px 'Space Grotesk',sans-serif;cursor:pointer}
+button.b:hover{filter:brightness(1.07)}
+button.b:disabled{opacity:.4;cursor:not-allowed}
+button.g{background:none;border:1px solid var(--line2);color:var(--ink);border-radius:4px;padding:8px 13px;font:500 13px 'Space Grotesk',sans-serif;cursor:pointer}
+button.g:hover{border-color:var(--dim);}
+button.g.sm{padding:4px 9px;font-size:12px}
+button.pill{border-radius:999px;padding:5px 12px;font-size:12.5px}
+button.pill[aria-pressed="true"]{border-color:var(--amber);color:var(--amber);background:rgba(232,163,61,.09);box-shadow:inset 0 0 0 1px var(--amber)}
+button.pill[aria-pressed="true"]::before{content:'✓ '}
+button.danger{color:var(--bad);border-color:var(--line2)}
+button.danger:hover{border-color:var(--bad)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:14px 0}
+.panel.tight{padding:12px 14px}
+.hint{font-size:12px;color:var(--dim2);margin:6px 0 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+
+/* steps rail */
+ol.steps{list-style:none;display:flex;gap:0;margin:0 0 20px;padding:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+ol.steps li{flex:1;padding:9px 12px;font:500 12.5px 'Space Grotesk',sans-serif;color:var(--dim2);border-right:1px solid var(--line);display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden}
+ol.steps li:last-child{border-right:0}
+ol.steps li .sq{width:8px;height:8px;flex:none;border:1.5px solid var(--dim2);border-radius:1px}
+ol.steps li.done{color:var(--dim)} ol.steps li.done .sq{background:var(--amber);border-color:var(--amber)}
+ol.steps li.now{color:var(--ink);background:var(--amber-soft)} ol.steps li.now .sq{border-color:var(--amber);background:transparent}
+
+/* plan ledger */
+.ledger{margin-top:6px}
+.prow{display:grid;grid-template-columns:52px 1fr 150px 118px auto;gap:14px;align-items:center;padding:13px 4px;border-bottom:1px solid var(--line)}
+.prow:hover{background:rgba(255,255,255,.016)}
+.prow .id{font:600 12.5px 'JetBrains Mono',monospace;color:var(--dim2)}
+.prow .tt{min-width:0;overflow:hidden}
+.prow .tt b{font-weight:600;font-size:14.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .tt span{font-size:12.5px;color:var(--dim2);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+h1.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis}
+.rail{display:flex;gap:2px;align-items:center;height:14px}
+.rail i{width:3px;height:9px;background:var(--line2);border-radius:1px}
+.rail i.d{background:var(--amber)} .rail i.f{background:var(--bad)} .rail i.g{background:var(--ok)}
+.pmeta{font:12px 'JetBrains Mono',monospace;color:var(--dim);text-align:right}
+.pacts{display:flex;gap:6px;justify-content:flex-end}
+.draftbar{display:flex;align-items:center;gap:12px;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel2);padding:12px 14px;margin:16px 0 4px}
+.draftbar .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex:none}
+.empty{padding:34px 0;text-align:center;color:var(--dim2);font-size:13.5px}
+
+/* progress */
+.bar{height:5px;background:var(--panel2);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--amber);border-radius:3px}
+.pstats{font:12px 'JetBrains Mono',monospace;color:var(--dim);white-space:nowrap}
+
+/* plan view */
+.cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:18px;align-items:start}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+pre.prd{white-space:pre-wrap;font:12.5px/1.66 'JetBrains Mono',monospace;color:#d8d5cf;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;padding-right:6px;max-height:70vh;overflow:auto;margin:0;scrollbar-gutter:stable}
+pre.prompt{white-space:pre-wrap;font:12px/1.6 'JetBrains Mono',monospace;background:#0f0f0f;border:1px solid var(--line2);border-radius:4px;padding:13px;max-height:300px;overflow:auto}
+.feat{border:1px solid var(--line);border-radius:var(--r);margin:0 0 12px;overflow:hidden}
+.feat>header{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;background:var(--panel2);border-bottom:1px solid var(--line);align-items:baseline}
+.feat>header b{font-size:13.5px;font-weight:600}
+.feat .sum{padding:8px 12px 0;font-size:12.5px;color:var(--dim2)}
+.trow{display:flex;gap:10px;align-items:flex-start;padding:7px 12px;border-top:1px solid var(--line);font-size:13.5px}
+.trow:first-of-type{border-top:0}
+.chip{font:600 10px 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:3px;padding:2px 6px;color:var(--dim);white-space:nowrap;flex:none;margin-top:2px}
+.chip.todo{color:var(--dim2)}
+.chip.doing{color:var(--amber);border-color:var(--amber)}
+.chip.done{color:var(--ok);border-color:var(--ok)}
+.chip.failed{color:var(--bad);border-color:var(--bad)}
+.ref{font:600 11.5px 'JetBrains Mono',monospace;color:var(--dim2);flex:none;margin-top:1px}
+.layer{font:11px 'JetBrains Mono',monospace;color:var(--dim2)}
+.tnote{font-size:12px;color:var(--dim2);margin-top:2px}
+.stackbar{position:fixed;left:0;right:0;bottom:0;border-top:1px solid var(--line);background:rgba(12,12,13,.94);backdrop-filter:blur(8px)}
+.stackbar .in{max-width:1080px;margin:0 auto;padding:8px 22px;display:flex;gap:14px;align-items:center;font:12px 'JetBrains Mono',monospace;color:var(--dim)}
+.stackbar .in b{color:var(--ink);font-weight:500}
+#toast{position:fixed;bottom:44px;right:20px;background:var(--panel2);border:1px solid var(--line2);border-left:2px solid var(--amber);padding:10px 14px;border-radius:4px;display:none;max-width:370px;font-size:13px;z-index:30}
+.err{color:var(--bad);font-size:12.5px}
+/* model picker */
+.mlist{max-height:340px;overflow:auto;border:1px solid var(--line2);border-radius:4px;margin-top:10px}
+.mrow{display:flex;gap:8px;align-items:center;padding:5px 10px;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow .mid{font:12px 'JetBrains Mono',monospace;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick{background:none;border:1px solid var(--line2);color:var(--dim);border-radius:3px;padding:3px 8px;font:500 11.5px 'Space Grotesk',sans-serif;cursor:pointer;white-space:nowrap}
+.pick:hover{border-color:var(--dim);color:var(--ink)}
+.pick.on{background:var(--amber);border-color:var(--amber);color:#161210;font-weight:600}
+.mfilter{margin-top:10px}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.mhead .lbl{font:600 11px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2)}
+.src{font:600 10px 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:3px;padding:1px 5px;color:var(--dim2)}
+.src.db{color:var(--amber);border-color:var(--amber)}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <div class="brand" id="brand">
+    <img src="/logos/lf-mark-tight.png" width="27" height="25" alt="" style="display:block;width:27px;height:auto">Lani<em>fex</em>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="spacer"></div>
+  <span class="who" id="who"></span>
+</div></header>
+<div class="wrap"><main id="app"></main></div>
+<div class="stackbar" id="stackbar" style="display:none"><div class="in"></div></div>
+<div id="toast"></div>
+<script>
+'use strict';
+/* ================= helpers ================= */
+const $ = (s, el = document) => el.querySelector(s);
+const el = (s) => document.createElement(s);
+const h = (html) => { const a = document.getElementById('app'); a.innerHTML = html; window.scrollTo(0, 0); };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const toast = (m) => { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(() => t.style.display = 'none', 3400); };
+async function api(url, opts = {}) {
+  const r = await fetch(url, { headers: { 'content-type': 'application/json' }, credentials: 'same-origin', ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || r.statusText);
+  return d;
+}
+const fmtDate = (s) => { if (!s) return ''; const d = new Date((s || '').replace(' ', 'T') + (String(s).includes('Z') || String(s).includes('T') ? '' : 'Z')); return isNaN(d) ? s : d.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); };
+const state = { me: null, registrationOpen: true, planId: null, plan: null, questions: [], answers: {}, poller: null, route: 'plans' };
+
+/* ================= chrome (tabs + status) ================= */
+function tabs(active) {
+  state.route = active;
+  const t = $('#tabs');
+  if (!state.me) { t.innerHTML = ''; $('#who').textContent = ''; return; }
+  const owner = state.me.role === 'owner';
+  const items = [['plans', 'Plan'], ['new', 'Baru'], ...(owner ? [['users', 'Akun'], ['settings', 'Setelan']] : [])];
+  t.innerHTML = items.map(([k, v]) => `<button data-tab="${k}" class="${active === k ? 'on' : ''}">${v}</button>`).join('');
+  t.querySelectorAll('button').forEach(b => b.onclick = () => {
+    stopPoll();
+    const k = b.dataset.tab;
+    if (k === 'plans') renderPlans();
+    if (k === 'new') startWizard();
+    if (k === 'users') renderUsers();
+    if (k === 'settings') renderSettings();
+  });
+  $('#who').innerHTML = `${esc(state.me.email)}${owner ? ' <b>· pemilik</b>' : ''} <button class="g sm" id="out" style="margin-left:8px">Keluar</button>`;
+  $('#out').onclick = async () => { await api('/api/auth/logout', { method: 'POST' }); location.reload(); };
+}
+function setStack(html) { const sb = $('#stackbar'); if (!html) { sb.style.display = 'none'; return; } sb.style.display = 'block'; sb.querySelector('.in').innerHTML = html; }
+
+/* ================= auth ================= */
+function renderAuth(register = false) {
+  tabs(''); 
+  const closed = !state.registrationOpen; if (closed) register = false;
+  h(`<div style="max-width:420px;margin:9vh auto 0">
+    <h1 style="margin-top:0">${register ? 'Buat akun pemilik' : 'Masuk'}</h1>
+    <p class="lead">${closed ? 'Registrasi publik ditutup. Minta pemilik membuatkan akunmu.' : (register ? 'Akun pertama otomatis jadi pemilik. Setelah itu pendaftaran ditutup.' : 'Pertama kali? Klik "Buat akun pemilik".')}</p>
+    <div class="panel">
+      <label>Email</label><input id="email" type="email" autocomplete="email">
+      <label>Password</label><input id="pw" type="password" autocomplete="${register ? 'new-password' : 'current-password'}">
+      <div class="row spread" style="margin-top:18px">
+        <button class="b" id="go">${register ? 'Daftar' : 'Masuk'}</button>
+        ${closed ? '' : `<button class="g" id="swap">${register ? 'Sudah punya akun' : 'Buat akun pemilik'}</button>`}
+      </div>
+      <p class="err" id="err" style="margin:10px 0 0"></p>
+    </div>
+  </div>`);
+  if ($('#swap')) $('#swap').onclick = () => renderAuth(!register);
+  const submit = async () => {
+    try {
+      await api('/api/auth/' + (register ? 'register' : 'login'), { method: 'POST', body: { email: $('#email').value, password: $('#pw').value } });
+      await boot();
+    } catch (e) { $('#err').textContent = e.message; }
+  };
+  $('#go').onclick = submit;
+  $('#app').addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+}
+
+/* ================= plans (ledger) ================= */
+function railOf(p) {
+  // 14 tick: proporsi todo/doing/done/failed
+  const n = 14, t = p.total || 0;
+  return Array.from({ length: n }, (_, i) => {
+    if (!t) return '<i></i>';
+    const x = (i + 1) / n;
+    if (x > 1 - (p.failed || 0) / t) return '<i class="f"></i>';
+    if (x <= (p.done || 0) / t) return '<i class="d"></i>';
+    if (p.doing && x <= ((p.done || 0) + p.doing) / t) return '<i class="g"></i>';
+    return '<i></i>';
+  }).join('');
+}
+async function renderPlans() {
+  tabs('plans');
+  const { plans } = await api('/api/plan/list');
+  const drafts = plans.filter(p => p.status !== 'completed');
+  const saved = loadWizardDraft();
+  h(`<div class="row spread" style="align-items:baseline">
+      <div><h1>Plan</h1><p class="lead" style="margin:0">${plans.length} plan · ${plans.filter(p => p.status === 'completed').length} selesai</p></div>
+    </div>
+    ${drafts.length || saved ? `<div class="draftbar" id="resume"><span class="dot"></span>
+      <span style="flex:1;font-size:13.5px">${drafts.length ? `Draf tersimpan: <b>#${drafts[0].id}</b> ${esc(drafts[0].title)}` : `Draf belum tersimpan di server: <b>${esc(saved?.idea || '')}</b>`}</span>
+      <button class="b" id="resumeGo">Lanjutkan</button>
+      <button class="g sm" id="resumeDrop">Buang</button></div>` : ''}
+    <div class="ledger" style="margin-top:14px">
+      ${plans.length ? plans.map(p => `
+        <div class="prow">
+          <span class="id">#${p.id}</span>
+          <div class="tt"><b>${esc(p.title)}</b><span>${esc((p.idea || '').slice(0, 110))}</span></div>
+          <div><div class="rail">${railOf(p.progress)}</div><div class="pstats" style="margin-top:4px">${p.progress.done}/${p.progress.total} · ${p.progress.percent}%</div></div>
+          <div class="pmeta">${p.status === 'completed' ? 'selesai' : 'draf'} · ${fmtDate(p.updated_at || p.created_at)}</div>
+          <div class="pacts"><button class="g sm" data-open="${p.id}">Buka</button><button class="g sm danger" data-del="${p.id}" data-title="${esc(p.title)}">Hapus</button></div>
+        </div>`).join('') : '<div class="empty">Belum ada plan.</div>'}
+    </div>`);
+  document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openPlan(+b.dataset.open));
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => deletePlan(+b.dataset.del, b.dataset.title));
+  const rg = $('#resumeGo'); if (rg) rg.onclick = () => {
+    if (drafts.length) openPlan(drafts[0].id); else startWizard({ fromDraft: saved });
+  };
+  const rd = $('#resumeDrop');
+  if (rd) rd.onclick = async () => {
+    if (drafts.length) await deletePlan(drafts[0].id, drafts[0].title, true); else { dropWizardDraft(); toast('Draf lokal dibuang'); }
+    renderPlans();
+  };
+}
+async function deletePlan(id, title, silent) {
+  if (!silent && !confirm(`Hapus plan #${id} "${title}" beserta PRD, fitur, dan task-nya? Tindakan ini tidak bisa dibatalkan.`)) return;
+  try {
+    await api(`/api/plan/${id}`, { method: 'DELETE' });
+    if (state.planId === id) { state.planId = null; stopPoll(); }
+    toast(`Plan #${id} dihapus`);
+    if (!silent) renderPlans();
+  } catch (e) { toast(e.message); }
+}
+
+/* ================= wizard (dengan resume) ================= */
+const WKEY = 'pf-wizard-draft';
+const saveWizardDraft = (d) => { try { localStorage.setItem(WKEY, JSON.stringify({ step: state.step || 1, ...d })); } catch {} };
+const loadWizardDraft = () => { try { return JSON.parse(localStorage.getItem(WKEY)); } catch { return null; } };
+const dropWizardDraft = () => { try { localStorage.removeItem(WKEY); } catch {} };
+const STEPS = ['Ide', 'Tech', 'Pertanyaan', 'PRD', 'Fitur & Task'];
+function stepsRail(cur) {
+  return `<ol class="steps">${STEPS.map((s, i) => `<li class="${i + 1 === cur ? 'now' : (i + 1 < cur ? 'done' : '')}"><span class="sq"></span>${i + 1}. ${s}</li>`).join('')}</ol>`;
+}
+function startWizard({ fromDraft } = {}) {
+  tabs('new'); stopPoll();
+  const d = fromDraft || loadWizardDraft() || {};
+  state.planId = d.planId || null;
+  state.idea = d.idea || ''; state.techMode = d.techMode || 'ai'; state.tech = d.tech || {};
+  state.questions = d.questions || []; state.answers = d.answers || {};
+  wizardStep(d.step || 1);
+}
+async function wizardStep(n) {
+  if (n === 1) return stepIdea();
+  if (n === 2) return stepTech();
+  if (n === 3) return stepQuestions();
+  if (n === 4) return stepPrd();
+  return stepFeat();
+}
+function stepIdea() {
+  tabs('new'); state.step = 1;
+  h(`${stepsRail(1)}
+    <h2>Ceritakan idemu</h2><p class="lead">Dari ide jadi PRD, fitur, dan task siap kerja untuk agent coding.</p>
+    <div class="panel">
+      <label>Ide aplikasi</label>
+      <textarea id="idea" placeholder="Contoh: aplikasi pencatat pengeluaran harian dengan laporan bulanan...">${esc(state.idea || '')}</textarea>
+      <div class="row spread" style="margin-top:16px"><span class="hint">Otomatis tersimpan sebagai draf lokal. Bisa dilanjutkan kapan saja.</span><button class="b" id="next">Susun pertanyaan →</button></div>
+    </div>`);
+  const persist = () => { state.idea = $('#idea').value; saveWizardDraft({ idea: state.idea, techMode: state.techMode, tech: state.tech, planId: state.planId }); };
+  $('#idea').oninput = () => { clearTimeout(state._wt); state._wt = setTimeout(persist, 700); };
+  $('#next').onclick = () => {
+    persist();
+    if (!state.idea.trim()) return toast('Isi ide dulu');
+    state.techMode = state.techMode || 'ai';
+    stepTech();
+  };
+}
+function stepTech() {
+  tabs('new'); state.step = 2;
+  const manual = state.techMode === 'manual';
+  h(`${stepsRail(2)}
+    <h2>Tech stack</h2><p class="lead">Biarkan AI memutuskan, atau tentukan sendiri per lapisan.</p>
+    <div class="panel">
+      <div class="row" style="margin-bottom:6px">
+        <button class="g pill" id="mAi" aria-pressed="${!manual}">AI yang tentuin</button>
+        <button class="g pill" id="mManual" aria-pressed="${manual}">Pilih sendiri</button>
+      </div>
+      ${manual ? `<div class="grid2">${['frontend', 'backend', 'database', 'deployment'].map(l => `
+        <div><label>${l}</label><input data-layer="${l}" value="${esc(state.tech?.[l] || '')}" placeholder="mis. ${l === 'frontend' ? 'Next.js' : l === 'backend' ? 'Node.js' : l === 'database' ? 'PostgreSQL' : 'Docker'}"></div>`).join('')}</div>`
+      : `<p class="hint">AI akan memilih stack paling sesuai dengan ide di atas.</p>`}
+      <div class="row spread" style="margin-top:16px">
+        <button class="g" id="back">← Ide</button>
+        <button class="b" id="next">Buat pertanyaan →</button>
+      </div>
+    </div>`);
+  $('#mAi').onclick = () => { state.techMode = 'ai'; state.tech = {}; saveWizardDraft({ idea: state.idea, techMode: 'ai', tech: {}, planId: state.planId }); stepTech(); };
+  $('#mManual').onclick = () => { state.techMode = 'manual'; stepTech(); };
+  $('#back').onclick = () => stepIdea();
+  $('#next').onclick = async () => {
+    if (manual) { state.tech = {}; document.querySelectorAll('[data-layer]').forEach(i => { if (i.value.trim()) state.tech[i.dataset.layer] = i.value.trim(); }); }
+    const btn = $('#next'); btn.disabled = true; btn.textContent = 'Menyusun pertanyaan…';
+    try {
+      if (!state.questions?.length) {
+        const d = await api('/api/plan/questions', { method: 'POST', body: { idea: state.idea, language: 'id' } });
+        state.questions = d.questions || [];
+      }
+      // buat plan draf lebih awal supaya jawaban aman tersimpan di server
+      if (!state.planId) {
+        const { planId } = await api('/api/plan/create', { method: 'POST', body: { idea: state.idea, tech: state.tech, questions: state.questions, answers: state.answers, wizardState: { step: 3 } } });
+        state.planId = planId;
+        saveWizardDraft({ planId, idea: state.idea, techMode: state.techMode, tech: state.tech });
+      }
+      stepQuestions();
+    } catch (e) { toast(e.message); btn.disabled = false; btn.textContent = 'Buat pertanyaan →'; }
+  };
+}
+let wizSaveTimer = null;
+function saveWizardServer() {
+  if (!state.planId) return;
+  clearTimeout(wizSaveTimer);
+  wizSaveTimer = setTimeout(() => {
+    api(`/api/plan/${state.planId}/wizard-state`, { method: 'PUT', body: { state: { step: state.step || 3, idea: state.idea, tech: state.tech, questions: state.questions, answers: state.answers } } }).catch(() => {});
+  }, 700);
+}
+// flush sinkron saat tab ditutup/ditinggal — supaya posisi terakhir tak hilang
+window.addEventListener('pagehide', () => {
+  if (!state.planId) return;
+  try {
+    fetch(`/api/plan/${state.planId}/wizard-state`, {
+      method: 'PUT', credentials: 'same-origin', keepalive: true,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ state: { step: state.step || 3, idea: state.idea, tech: state.tech, questions: state.questions, answers: state.answers } }),
+    });
+  } catch {}
+});
+function stepQuestions() {
+  tabs('new'); state.step = 3;
+  const Q = state.questions;
+  h(`${stepsRail(3)}
+    <h2>Beberapa pertanyaan</h2><p class="lead">Biar PRD-nya lebih akurat. Jawab atau lewati — progres tersimpan otomatis${state.planId ? ` (plan #${state.planId})` : ''}.</p>
+    <div class="panel">
+      ${Q.map((x, i) => questionHtml(x, i)).join('')}
+      <div class="row spread" style="margin-top:16px">
+        <button class="g" id="back">← Tech</button>
+        <button class="b" id="next">Bikin PRD →</button>
+      </div>
+    </div>`);
+  document.querySelectorAll('[data-qid]').forEach(el2 => {
+    if (el2.dataset.opt === undefined) return;
+    el2.onclick = () => {
+      const q = Q.find(z => z.id === el2.dataset.qid); const multi = q.type === 'multi_choice';
+      if (multi) { const cur = new Set(state.answers[el2.dataset.qid] || []); cur.has(el2.dataset.opt) ? cur.delete(el2.dataset.opt) : cur.add(el2.dataset.opt); state.answers[el2.dataset.qid] = [...cur]; }
+      else state.answers[el2.dataset.qid] = (state.answers[el2.dataset.qid] === el2.dataset.opt ? '' : el2.dataset.opt);
+      refreshPills();
+      saveWizardServer();
+      saveWizardDraft({ planId: state.planId, idea: state.idea, techMode: state.techMode, tech: state.tech });
+    };
+  });
+  document.querySelectorAll('[data-qtext]').forEach(el2 => el2.oninput = () => { state.answers[el2.dataset.qtext] = el2.value; saveWizardServer(); });
+  $('#back').onclick = () => stepTech();
+  $('#next').onclick = () => { saveWizardServer(); stepPrd(); };
+}
+function questionHtml(x, i) {
+  const a = state.answers[x.id];
+  if (x.type === 'text') return `<div style="padding:12px 0;border-top:1px solid var(--line)">
+    <b style="font-size:14px">${i + 1}. ${esc(x.question)}</b>
+    <textarea data-qtext="${esc(x.id)}" style="min-height:60px;margin-top:6px" placeholder="Ketik jawaban…">${esc(a || '')}</textarea></div>`;
+  return `<div style="padding:12px 0;border-top:1px solid var(--line)">
+    <b style="font-size:14px">${i + 1}. ${esc(x.question)}</b> ${x.type === 'multi_choice' ? '<span class="dim2" style="font-size:12px">(bisa pilih beberapa)</span>' : ''}
+      <div style="margin-top:8px" class="row">${(x.options || []).map(o => {
+      const sel = Array.isArray(a) ? a.includes(o) : a === o;
+      return `<button class="g sm pill" aria-pressed="${sel}" data-qid="${esc(x.id)}" data-opt="${esc(o)}">${esc(o)}</button>`;
+    }).join('')}</div></div>`;
+}
+function refreshPills() {
+  document.querySelectorAll('[data-qid]').forEach(el2 => {
+    const a = state.answers[el2.dataset.qid];
+    const sel = Array.isArray(a) ? a.includes(el2.dataset.opt) : a === el2.dataset.opt;
+    el2.className = 'g sm pill';
+    el2.setAttribute('aria-pressed', String(sel));
+  });
+}
+async function stepPrd() {
+  tabs('new'); state.step = 4;
+  h(`${stepsRail(4)}
+    <h2>Menyusun PRD</h2><p class="lead" id="genState">Streaming dari model…</p>
+    <div class="panel" style="padding:0"><pre class="prd" id="prdOut" style="border:0;border-radius:0;max-height:62vh"></pre></div>
+    <div class="row spread"><button class="g" id="back">← Pertanyaan</button><button class="b" id="toFeat" disabled>Pecah jadi Fitur & Task →</button></div>`);
+  const out = $('#prdOut');
+  try {
+    const r = await fetch(`/api/plan/${state.planId}/generate`, { method: 'POST', credentials: 'same-origin' });
+    const rd = r.body.getReader(); const dec = new TextDecoder(); let full = '';
+    for (;;) { const { done, value } = await rd.read(); if (done) break; full += dec.decode(value, { stream: true }); out.textContent = full; out.scrollTop = out.scrollHeight; }
+    $('#genState').textContent = 'PRD selesai — review dulu, lalu pecah jadi task.';
+    $('#toFeat').disabled = false;
+  } catch (e) { $('#genState').textContent = 'Gagal: ' + e.message; }
+  $('#back').onclick = () => stepQuestions();
+  $('#toFeat').onclick = async () => {
+    const b = $('#toFeat'); b.disabled = true; b.textContent = 'Menyusun fitur & task…';
+    try { await api(`/api/plan/${state.planId}/features`, { method: 'POST', body: {} }); dropWizardDraft(); openPlan(state.planId); }
+    catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Pecah jadi Fitur & Task →'; }
+  };
+}
+function stepFeat() { openPlan(state.planId); }
+
+/* ================= plan view ================= */
+async function openPlan(id) {
+  const d = await api(`/api/plan/${id}`);
+  const wz = d.plan.wizard_state || {};
+  const draft = d.plan.status !== 'completed';
+  if (draft && wz.step && wz.step >= 1) {
+    // resume wizard di tempat berhenti
+    state.planId = id;
+    state.idea = wz.idea || d.plan.idea || ''; state.tech = wz.tech || d.plan.tech || {};
+    state.questions = wz.questions?.length ? wz.questions : (d.plan.questions || []);
+    state.answers = wz.answers || d.plan.answers || {};
+    state.techMode = 'ai';
+    toast(`Melanjutkan draf #${id} dari langkah ${wz.step}`);
+    if (!state.questions.length) return stepIdea();
+    return wz.step >= 4 ? stepPrd() : stepQuestions();
+  }
+  state.planId = id; state.plan = d;
+  stopPoll(); tabs('plans');
+  const p = d.plan, prog = d.progress;
+  h(`<div class="row spread" style="align-items:baseline;margin-top:20px">
+      <div><h1 style="margin:0" class="clamp">#${p.id} ${esc(p.title)}</h1>
+        <p class="lead" style="margin:2px 0 0">${esc((p.idea || '').slice(0, 150))}</p></div>
+      <div class="row">
+        <button class="g" id="btnRevise">Revisi PRD</button>
+        <button class="g" id="btnAgent">Prompt agent</button>
+        <button class="g danger" id="btnDel" data-title="${esc(p.title)}">Hapus plan</button>
+      </div>
+    </div>
+    <div class="panel tight" style="margin-top:14px">
+      <div class="row spread"><span class="dim2" style="font-size:12.5px" id="progText"></span><span class="pstats" id="progNum"></span></div>
+      <div class="bar" style="margin-top:8px"><i id="progBar"></i></div>
+    </div>
+    <div id="revPanel"></div>
+    <div id="promptCard"></div>
+    <div class="cols" style="margin-top:16px">
+      <div><h3>PRD</h3><pre class="prd" id="prdBox">${esc(p.prd || '(belum digenerate)')}</pre></div>
+      <div><h3>Roadmap & task</h3><div id="roadmap"></div>
+        <p class="hint">Task diupdate oleh agent lewat CLI; halaman ini menyegarkan tiap 4 dtk.</p></div>
+    </div>`);
+  const paint = (dd) => {
+    $('#progText').textContent = `${dd.progress.done} selesai · ${dd.progress.doing} on progress · ${dd.progress.todo} todo${dd.progress.failed ? ` · ${dd.progress.failed} gagal` : ''}`;
+    $('#progNum').textContent = `${dd.progress.percent}% · ${dd.progress.features} fitur`;
+    $('#progBar').style.width = dd.progress.percent + '%';
+    $('#roadmap').innerHTML = roadmapHtml(dd.features);
+  };
+  paint(d);
+  setStack(`<span>plan <b>#${p.id}</b></span><span>${esc(p.status)}</span><span class="dim2">diperbarui ${fmtDate(p.updated_at)}</span>`);
+  $('#btnDel').onclick = () => deletePlan(id, p.title).then(ok => { if (ok !== false) renderPlans(); });
+  $('#btnAgent').onclick = async () => {
+    const c = $('#promptCard'); c.innerHTML = '<div class="panel tight"><span class="dim2" style="font-size:13px">Menyiapkan token & prompt…</span></div>';
+    try {
+      const { prompt } = await api(`/api/plan/${id}/agent-token`, { method: 'POST' });
+      c.innerHTML = `<div class="panel"><div class="row spread"><h3 style="margin:0">Prompt agent</h3><button class="g sm" id="cp">Salin</button></div>
+        <p class="hint">Memuat token akses <span class="mono">ngpk_…</span> — tempel hanya ke agent yang kamu percaya.</p>
+        <pre class="prompt">${esc(prompt)}</pre></div>`;
+      $('#cp').onclick = async () => { await navigator.clipboard.writeText(prompt); toast('Prompt tersalin'); };
+    } catch (e) { c.innerHTML = `<div class="panel"><p class="err">${esc(e.message)}</p></div>`; }
+  };
+  $('#btnRevise').onclick = () => {
+    const c = $('#revPanel');
+    c.innerHTML = `<div class="panel"><h3 style="margin:0 0 6px">Revisi PRD</h3>
+      <textarea id="ins" style="min-height:64px" placeholder="mis. Tambahkan estimasi waktu per fitur dan bagian risiko."></textarea>
+      <div class="row" style="margin-top:12px"><button class="b" id="revGo">Kirim revisi</button><button class="g" id="revCancel">Batal</button></div></div>`;
+    $('#revCancel').onclick = () => { c.innerHTML = ''; };
+    $('#revGo').onclick = async () => {
+      const ins = $('#ins').value.trim(); if (!ins) return toast('Tulis instruksi dulu');
+      $('#revGo').disabled = true; $('#revGo').textContent = 'Merevisi…';
+      try { await api(`/api/plan/${id}/revise`, { method: 'POST', body: { instruction: ins } }); toast('PRD direvisi'); openPlan(id); }
+      catch (e) { toast(e.message); $('#revGo').disabled = false; $('#revGo').textContent = 'Kirim revisi'; }
+    };
+  };
+  startPoll(id);
+}
+function roadmapHtml(features) {
+  if (!features?.length) return '<div class="panel tight"><span class="dim2" style="font-size:13px">Belum ada fitur & task. Jalankan "Pecah jadi Fitur & Task" dari wizard.</span></div>';
+  return features.map(f => `<div class="feat">
+    <header><b>${f.idx}. ${esc(f.title)}</b><span class="layer">${esc(f.layer)}</span></header>
+    ${f.summary ? `<div class="sum">${esc(f.summary)}</div>` : ''}
+    ${f.tasks.map(t => `<div class="trow">
+      <span class="chip ${t.status}">${t.status === 'doing' ? 'on progress' : t.status}</span>
+      <span class="ref">${esc(t.ref)}</span>
+      <div style="min-width:0"><div>${esc(t.title)} <span class="layer">· ${esc(t.layer)}</span></div>${t.note ? `<div class="tnote">${esc(t.note)}</div>` : ''}</div>
+    </div>`).join('')}
+  </div>`).join('');
+}
+function startPoll(id) {
+  stopPoll();
+  state.poller = setInterval(async () => {
+    if (state.planId !== id || !$('#roadmap')) return stopPoll();
+    try { const dd = await api(`/api/plan/${id}`); paintPlan(dd); } catch {}
+  }, 4000);
+}
+function paintPlan(dd) {
+  const g = (s) => document.getElementById(s);
+  if (!g('progText')) return;
+  g('progText').textContent = `${dd.progress.done} selesai · ${dd.progress.doing} on progress · ${dd.progress.todo} todo${dd.progress.failed ? ` · ${dd.progress.failed} gagal` : ''}`;
+  g('progNum').textContent = `${dd.progress.percent}% · ${dd.progress.features} fitur`;
+  g('progBar').style.width = dd.progress.percent + '%';
+  g('roadmap').innerHTML = roadmapHtml(dd.features);
+}
+function stopPoll() { if (state.poller) clearInterval(state.poller); state.poller = null; }
+
+/* ================= owner: users ================= */
+async function renderUsers() {
+  tabs('users');
+  const { users } = await api('/api/owner/users');
+  h(`<h1>Akun</h1><p class="lead">${users.length} akun · buat akun baru untuk orang lain di sini.</p>
+    <div class="panel">
+      <h3>Buat akun</h3>
+      <div class="grid2">
+        <div><label>Email</label><input id="nuEmail" type="email" placeholder="nama@email.com"></div>
+        <div><label>Password awal</label><input id="nuPw" type="text" placeholder="min 6 karakter"></div>
+      </div>
+      <div class="row" style="margin-top:14px"><button class="b" id="nuGo">Buat akun</button><span class="err" id="nuMsg"></span></div>
+    </div>
+    <div class="panel" style="padding:6px 14px">
+      ${users.map(u => `<div class="trow" style="border-top:1px solid var(--line);padding:10px 0">
+        <span class="chip ${u.role === 'owner' ? 'done' : 'todo'}">${esc(u.role)}</span>
+        <div style="flex:1"><b style="font-weight:500">${esc(u.email)}</b><div class="dim2" style="font-size:12px">dibuat ${fmtDate(u.created_at)}</div></div></div>`).join('')}
+    </div>`);
+  $('#nuGo').onclick = async () => {
+    const b = $('#nuGo'); b.disabled = true;
+    try { await api('/api/owner/users', { method: 'POST', body: { email: $('#nuEmail').value, password: $('#nuPw').value } }); toast('Akun dibuat'); renderUsers(); }
+    catch (e) { $('#nuMsg').textContent = e.message; b.disabled = false; }
+  };
+}
+
+/* ================= owner: settings (model AI) ================= */
+async function renderSettings() {
+  tabs('settings');
+  const d = await api('/api/settings');
+  const s = d.settings, src = d.source;
+  const badge = (k) => `<span class="src ${src[k] === 'db' ? 'db' : ''}">${src[k] === 'db' ? 'setelan' : 'env'}</span>`;
+  h(`<h1>Setelan model AI</h1><p class="lead">Nilai di sini menimpa env container. Kosongkan kolom = kembali ikut env.</p>
+    <div class="panel">
+      <h3>Endpoint</h3>
+      <label>Base URL (OpenAI-compatible) ${badge('baseUrl')}</label>
+      <input id="sBase" value="${esc(s.baseUrl)}" placeholder="http://9router:20128/v1">
+      <label>API key ${badge('apiKey')} <span class="dim2">${s.hasKey ? `tersimpan ${esc(s.keyHint)}` : 'belum ada'}</span></label>
+      <input id="sKey" type="password" placeholder="${s.hasKey ? '•••••••• (ketik untuk ganti)' : 'sk-…'}">
+      <div class="row" style="margin-top:10px"><button class="g sm danger" id="sKeysClear">Hapus override kunci</button><button class="b" id="sFetch" style="padding:7px 13px">Cek & tampilkan model</button><span class="err" id="sMsg"></span></div>
+      <div id="mList"></div>
+      <h3 style="margin-top:22px">Model</h3>
+      <div class="grid2">
+        <div><label>Model utama ${badge('model')}</label><input id="sModel" value="${esc(s.model)}" placeholder="mis. openai/gpt-4o-mini"></div>
+        <div><label>Timeout (ms) ${badge('timeoutMs')}</label><input id="sTimeout" value="${esc(s.timeoutMs)}"></div>
+        <div><label>Model pertanyaan <span class="dim2">(kosong = ikut utama)</span> ${badge('modelQuestions')}</label><input id="sMQ" value="${esc(s.modelQuestions)}"></div>
+        <div><label>Model PRD ${badge('modelPrd')}</label><input id="sMP" value="${esc(s.modelPrd)}"></div>
+        <div><label>Model fitur & task ${badge('modelFeatures')}</label><input id="sMF" value="${esc(s.modelFeatures)}"></div>
+      </div>
+      <div class="row spread" style="margin-top:20px">
+        <span class="hint">Env saat ini: <span class="mono">${esc(d.env.baseUrl)}</span> · model <span class="mono">${esc(d.env.model)}</span></span>
+        <button class="b" id="sSave">Simpan setelan</button>
+      </div>
+    </div>`);
+  // state pilihan model per tahap (untuk tanda aktif di daftar)
+  const cur = () => ({ model: $('#sModel').value.trim(), modelQuestions: $('#sMQ').value.trim(), modelPrd: $('#sMP').value.trim(), modelFeatures: $('#sMF').value.trim() });
+  const collect = () => ({
+    baseUrl: $('#sBase').value.trim(), model: $('#sModel').value.trim(), timeoutMs: $('#sTimeout').value.trim(),
+    modelQuestions: $('#sMQ').value.trim(), modelPrd: $('#sMP').value.trim(), modelFeatures: $('#sMF').value.trim(),
+    ...($('#sKey').value ? { apiKey: $('#sKey').value } : {}),
+  });
+  $('#sSave').onclick = async () => {
+    const b = $('#sSave'); b.disabled = true;
+    try { await api('/api/settings', { method: 'PUT', body: collect() }); toast('Setelan disimpan'); renderSettings(); }
+    catch (e) { $('#sMsg').textContent = e.message; b.disabled = false; }
+  };
+  $('#sKeysClear').onclick = async () => { try { await api('/api/settings', { method: 'PUT', body: { apiKey: '' } }); toast('Override kunci dihapus — kembali ke env'); renderSettings(); } catch (e) { toast(e.message); } };
+  $('#sFetch').onclick = async () => {
+    const b = $('#sFetch'); b.disabled = true; b.textContent = 'Mengambil…';
+    try {
+      state.models = await api('/api/settings/models', { method: 'POST', body: { baseUrl: $('#sBase').value.trim(), apiKey: $('#sKey').value } });
+      renderModelList();
+    } catch (e) { $('#mList').innerHTML = `<p class="err" style="margin-top:8px">${esc(e.message)}</p>`; }
+    b.disabled = false; b.textContent = 'Cek & tampilkan model';
+  };
+  function renderModelList() {
+    const r = state.models; if (!r) return;
+    const c = cur();
+    $('#mList').innerHTML = `
+      <div class="mhead"><span class="lbl">${r.count} model · ${esc(r.endpoint.replace(/^https?:\/\//, ''))}</span><span class="lbl">tugaskan ke tahap</span></div>
+      <input class="mfilter" id="mFilter" placeholder="Cari model… (mis. gemini, claude, deepseek)">
+      <div class="mlist" id="mRows">${rows(r.models).join('')}</div>`;
+    function rows(models) {
+      return models.map(m => {
+        const on = (k) => c[k] === m ? ' on' : '';
+        return `<div class="mrow" data-m="${esc(m)}"><span class="mid" title="${esc(m)}">${esc(m)}</span>
+          <button class="pick${on('model')}" data-set="model">utama</button>
+          <button class="pick${on('modelQuestions')}" data-set="modelQuestions">tanya</button>
+          <button class="pick${on('modelPrd')}" data-set="modelPrd">prd</button>
+          <button class="pick${on('modelFeatures')}" data-set="modelFeatures">fitur</button></div>`;
+      });
+    }
+    $('#mList').addEventListener('click', (e) => {
+      const x = e.target.closest('[data-set]'); if (!x) return;
+      const m = x.closest('.mrow').dataset.m;
+      const map = { model: '#sModel', modelQuestions: '#sMQ', modelPrd: '#sMP', modelFeatures: '#sMF' };
+      $(map[x.dataset.set]).value = m;
+      renderModelList();
+      toast(`${x.dataset.set} → ${m}`);
+    });
+    const f = $('#mFilter');
+    f.oninput = () => {
+      const q = f.value.toLowerCase();
+      const filtered = q ? r.models.filter(m => m.toLowerCase().includes(q)) : r.models;
+      $('#mRows').innerHTML = rows(filtered.slice(0, 400)).join('') || '<div class="mrow"><span class="mid dim2">tidak ada yang cocok</span></div>';
+    };
+  }
+  if (state.models) renderModelList();
+}
+
+/* ================= boot ================= */
+async function boot() {
+  const { user, registrationOpen } = await api('/api/me');
+  state.me = user; state.registrationOpen = registrationOpen !== false;
+  if (!user) return renderAuth();
+  renderPlans();
+}
+boot();
+</script>
+</body>
+</html>

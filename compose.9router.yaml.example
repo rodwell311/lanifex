@@ -1,0 +1,12 @@
+# Override untuk server ini: sambungkan PlanForge ke network container 9Router
+# Pakai: docker compose -f compose.yaml -f compose.9router.yaml up -d --build
+# Nilai LLM_BASE_URL di .env → http://9router:20128/v1
+services:
+  planforge:
+    networks:
+      - default
+      - router
+networks:
+  router:
+    external: true
+    name: 9router_default

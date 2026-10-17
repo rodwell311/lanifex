@@ -1,0 +1,4 @@
+/* Font self-hosted (unduh oleh Her; Space Grotesk 500/700, Inter 400-600, JetBrains Mono 400/500) */
+@font-face{font-family:'Space Grotesk';src:url('/fonts/space-grotesk.woff2') format('woff2');font-weight:500 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:400 600;font-style:normal;font-display:swap}
+@font-face{font-family:'JetBrains Mono';src:url('/fonts/jetbrains-mono.woff2') format('woff2');font-weight:400 600;font-style:normal;font-display:swap}
