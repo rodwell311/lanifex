@@ -2,30 +2,31 @@
 
 <div align="center">
   <img src="public/logos/lf-mark-tight.png" width="96" alt="Lanifex"><br>
-  <b>Self-hosted AI planning tool</b> - dari ide mentah jadi PRD, fitur, task, dan prompt siap-eksekusi untuk coding agent.
+  <b>Self-hosted AI planning tool</b> - from raw idea to PRD, features, tasks, and a ready-to-run prompt for your coding agent.<br>
+  <a href="README.id.md">Bahasa Indonesia</a> | English
 </div>
 
 ---
 
-## Arti nama
+## The name
 
-**Lanifex** berasal dari bahasa Latin: *lāna* (wol) + *-fex* ("pembuat", dari *facere* - seperti *artifex* si pengrajin, *opifex* si tukang). Jadi kira-kira: **"penenun"** - mereka yang menenun helai-helai benang terpisah menjadi satu kain utuh.
+**Lanifex** comes from Latin: *lāna* (wool) + *-fex* ("maker", from *facere* - as in *artifex*, the craftsman, or *opifex*, the workman). Roughly: **"the weaver"** - one who weaves separate threads into a single, whole fabric.
 
-Itulah yang tool ini lakukan: ide yang masih berantakan ditenun, helai demi helai, menjadi sesuatu yang utuh dan siap dikerjakan - pertanyaan penjelasan, PRD, daftar fitur, task berurutan, sampai prompt yang bisa dieksekusi coding agent.
+That is exactly what this tool does: it weaves a messy idea, thread by thread, into something complete and ready to build - clarifying questions, a PRD, a feature list, ordered tasks, and a prompt your coding agent can execute.
 
-## Kenapa Lanifex
+## Why Lanifex
 
-Kebanyakan alur "AI planning" berhenti di chat. Lanifex memindahkannya ke web app self-hosted yang menjadi **single source of truth** antara kamu dan coding agent (Claude Code, Codex, OpenCode, dll):
+Most "AI planning" workflows die in a chat window. Lanifex moves them into a self-hosted web app that becomes the **single source of truth** between you and your coding agent (Claude Code, Codex, OpenCode, etc):
 
-- **Wizard 5 langkah** - Ide → Tech stack (AI yang pilih atau kamu tentukan) → Pertanyaan klarifikasi dari AI → PRD (streaming) → Fitur & Task
-- **PRD hidup** - markdown lengkap dengan acceptance criteria + roadmap, bisa direvisi dengan instruksi
-- **Prompt agent + token akses** - prompt siap-paste berisi token `lf_...` scoped per plan; agent mengerjakan task satu per satu dan melaporkan balik
-- **CLI agent** - `lanifex task next/start/complete/fail`, checkpoint per layer/fase, jadi agent tidak melompat-melompat
-- **Monitoring** - progres %, tag `on progress` pada task yang sedang dikerjakan, auto-refresh
-- **Model AI bebas diganti** - dari UI (halaman Setelan): ganti endpoint OpenAI-compatible apa pun, list & assign model per tahap, tanpa rebuild container. Env tetap didukung sebagai fallback.
-- **Multi-user + mode pemilik** - akun pertama otomatis jadi pemilik, registrasi publik tertutup, pemilik bisa membuatkan akun orang lain
-- **Resume wizard** - keluar di tengah perencanaan? Kembali tepat di langkah terakhir, jawaban utuh
-- **Zero dependency** - Node 22 + `node:sqlite` saja. Frontend satu file HTML, tanpa build step, tanpa framework.
+- **5-step wizard** - Idea → Tech stack (AI picks, or you decide) → AI clarifying questions → PRD (streamed) → Features & Tasks
+- **Living PRD** - full markdown with acceptance criteria and roadmap, revisable with plain instructions
+- **Agent prompt + access token** - copy-paste prompt containing a per-plan scoped token; the agent works through tasks one by one and reports back
+- **Agent CLI** - `lanifex task next/start/complete/fail` with per-layer/per-phase checkpoints, so agents don't skip around
+- **Monitoring** - progress %, an `on progress` tag on running tasks, auto-refresh
+- **Bring your own model** - from the UI (Settings page): point at any OpenAI-compatible endpoint, list its models, assign different models per stage, no container rebuild needed. Env vars still work as fallback.
+- **Multi-user + owner mode** - first account becomes the owner, public registration closes automatically, owner can create accounts for others
+- **Wizard resume** - leave mid-planning and come back exactly where you stopped, answers intact
+- **Zero dependencies** - Node 22 + `node:sqlite` only. Frontend is a single HTML file, no build step, no framework.
 
 ## Deploy (Docker)
 
@@ -33,81 +34,81 @@ Kebanyakan alur "AI planning" berhenti di chat. Lanifex memindahkannya ke web ap
 git clone https://github.com/rodwell311/lanifex.git
 cd lanifex
 cp .env.example .env
-# edit .env - arahkan LLM_BASE_URL ke provider OpenAI-compatible milikmu
+# edit .env - point LLM_BASE_URL at any OpenAI-compatible provider
 docker compose up -d --build
-# buka http://localhost:8788
+# open http://localhost:8788
 ```
 
-Kebutuhan: Docker + Compose v2. Port bisa diganti lewat `PORT` di `.env`.
+Requirements: Docker + Compose v2. Change the port via `PORT` in `.env`.
 
-### Konfigurasi LLM
+### LLM configuration
 
-Semua variabel di `.env` bisa dioverride dari **UI → Setelan** (nilai di database menang):
+Everything in `.env` can be overridden from the **UI → Settings** (database values win):
 
 ```bash
-LLM_BASE_URL=http://host.docker.internal:20128/v1   # endpoint OpenAI-compatible apa pun
+LLM_BASE_URL=http://host.docker.internal:20128/v1   # any OpenAI-compatible endpoint
 LLM_API_KEY=sk-...
-LLM_MODEL=code                                       # model utama
-LLM_MODEL_QUESTIONS=...                              # opsional: model per tahap
+LLM_MODEL=code                                       # main model
+LLM_MODEL_QUESTIONS=...                              # optional: per-stage models
 LLM_MODEL_PRD=...
 LLM_MODEL_FEATURES=...
 
-MOCK_LLM=1                                           # demo tanpa provider - output deterministik
+MOCK_LLM=1                                           # demo without a provider - deterministic output
 ```
 
-Cocok dengan: OpenAI, OpenRouter, Groq, vLLM, LiteLLM, Ollama (`/v1`), LM Studio, dan gateway lain yang kompatibel.
+Works with: OpenAI, OpenRouter, Groq, vLLM, LiteLLM, Ollama (`/v1`), LM Studio, and other compatible gateways.
 
 <details>
-<summary>LLM gateway jalan sebagai container di host yang sama (bind 127.0.0.1)?</summary>
+<summary>Is your LLM gateway a container on the same host, bound to 127.0.0.1?</summary>
 
-`host.docker.internal` tidak bisa menjangkau port yang hanya listen di `127.0.0.1` host. Solusi: join network container gateway itu - di `compose.yaml` sudah ada blok `networks.router` (external):
+`host.docker.internal` cannot reach ports bound to the host's `127.0.0.1`. Fix: join the gateway container's network - `compose.yaml` ships with an optional `networks.router` block (external):
 
 ```bash
-docker inspect <gateway> --format '{{json .NetworkSettings.Networks}}'  # lihat nama network
-# set LLM_BASE_URL=http://<nama-container-gateway>:<port>/v1
+docker inspect <gateway> --format '{{json .NetworkSettings.Networks}}'  # find the network name
+# set LLM_BASE_URL=http://<gateway-container>:<port>/v1
 ```
 
-Kalau tidak perlu, hapus saja blok `networks` di `compose.yaml`.
+Point the network name with `LLM_NET=<name>` or remove the `networks` block if you don't need it.
 </details>
 
-## Alur pemakaian
+## Usage flow
 
-1. **Web** → buat akun (yang pertama = pemilik) → **+ Plan baru** → tulis ide
-2. Jawab pertanyaan klarifikasi → PRD tergenerate (streaming, bisa direvisi) → **Pecah jadi Fitur & Task**
-3. **Prompt agent** → salin prompt berisi token → paste ke coding agent kamu
-4. Agent menjalankan loop:
+1. **Web** → create an account (the first one becomes the owner) → **+ New plan** → write your idea
+2. Answer the clarifying questions → PRD generates (streaming, revisable) → **Split into Features & Tasks**
+3. **Agent prompt** → copy the prompt containing your token → paste it into your coding agent
+4. The agent runs the loop:
    ```bash
    node cli.js login --server http://localhost:8788 --token lf_xxx
    node cli.js plan get 1
-   node cli.js task next --plan 1 --json    # satu task, berhenti tiap ganti layer/fase
+   node cli.js task next --plan 1 --json    # one task, pauses on layer/phase change
    node cli.js task start T1 && node cli.js task complete T1
    ```
-5. Dashboard menampilkan progres real-time - task aktif ditandai `on progress`
+5. The dashboard shows live progress - active tasks are tagged `on progress`
 
-## Arsitektur
+## Architecture
 
 ```
-server.js          # HTTP + SQLite + LLM client + API - satu file, zero dependency
-cli.js             # CLI agent (login / plan / task loop)
-public/index.html  # SPA wizard + dashboard - satu file, tanpa build
+server.js          # HTTP + SQLite + LLM client + API - one file, zero dependencies
+cli.js             # agent CLI (login / plan / task loop)
+public/index.html  # wizard + dashboard SPA - single file, no build
 Dockerfile         # node:22-alpine
-compose.yaml       # port 8788, volume data/, host.docker.internal
+compose.yaml       # port 8788, data/ volume, host.docker.internal
 ```
 
-**API**: `/api/auth/*`, `/api/plan/*`, `/api/settings*`, `/api/agent/*` (token `lf_`).
-**DB**: SQLite di `data/lanifex.db` (volume) - tabel `users, sessions, api_tokens, plans, features, tasks`.
+**API**: `/api/auth/*`, `/api/plan/*`, `/api/settings*`, `/api/agent/*` (tokens `lf_`).
+**DB**: SQLite at `data/lanifex.db` (volume) - tables `users, sessions, api_tokens, plans, features, tasks`.
 
 ## Test
 
 ```bash
-bash smoke.sh    # end-to-end mock: register → PRD → fitur/task → token → loop CLI → progres
+bash smoke.sh    # mock end-to-end: register → PRD → features/tasks → token → CLI loop → progress
 ```
 
-## Batasan
+## Limitations
 
-- Dibangun sebagai re-implementasi mandiri dari observasi perilaku sebuah produk planning berbasis AI - semua kode ditulis dari nol, tidak ada kode yang disalin.
-- Belum ada: pembayaran/kuota, chat revisi interaktif, sync codebase, multi-workspace.
+- Built as an independent re-implementation based on observing the behavior of an existing AI planning product - all code was written from scratch, nothing copied.
+- Not implemented yet: payments/quotas, interactive revision chat, codebase sync, multi-workspace.
 
-## Lisensi
+## License
 
 MIT
